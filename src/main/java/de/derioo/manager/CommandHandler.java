@@ -2,6 +2,7 @@ package de.derioo.manager;
 
 import de.derioo.annotations.*;
 import de.derioo.interfaces.Command;
+import de.derioo.objects.CommandBody;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -12,10 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class CommandHandler implements CommandExecutor, TabCompleter {
 
@@ -23,6 +21,8 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
     private final String basePermission;
 
     private final Command command;
+
+    private final Map<String, String> placeholderMap = new HashMap<>();
 
     public CommandHandler(@NotNull Command command) {
         CommandInit annotation = command.getClass().getAnnotation(CommandInit.class);
@@ -34,6 +34,8 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, org.bukkit.command.@NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        this.placeholderMap.clear();
+
         Method matchingMethod = getMatchingMethod(sender, args);
 
         if (matchingMethod == null) {
@@ -47,28 +49,27 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
 
         if (matchingMethod.isAnnotationPresent(Async.class)) {
             Bukkit.getScheduler().runTaskAsynchronously(CommandFramework.getPlugin(), () -> {
-                invoke(matchingMethod);
+                invoke(matchingMethod, args, sender);
             });
             return false;
         }
         if (matchingMethod.isAnnotationPresent(Sync.class)) {
             Bukkit.getScheduler().runTask(CommandFramework.getPlugin(), () -> {
-                invoke(matchingMethod);
+                invoke(matchingMethod, args, sender);
             });
             return false;
         }
 
-        invoke(matchingMethod);
-
-
+        invoke(matchingMethod, args, sender);
 
 
         return false;
     }
 
-    private void invoke(Method method) {
+    private void invoke(Method method, String[] args, CommandSender sender) {
         try {
-            method.invoke(this.command);
+            CommandBody commandBody = new CommandBody(args, sender instanceof Player ? (Player) sender : null, sender, placeholderMap);
+            method.invoke(this.command, commandBody);
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
@@ -88,13 +89,16 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
 
 
             for (int i = 0; i < split.length; i++) {
-                String arg = split[i];
-                if (!hasPlaceholder(arg)) {
-                    if (equals(arg, args[i], method)) continue;
+                String arg = args[i];
+                if (!hasPlaceholder(split[i])) {
+                    if (equals(split[i], args[i], method)) {
+                        continue;
+                    }
                     matches = false;
                     continue;
                 }
-                String[] placeholders = getPlaceholder(arg);
+                placeholderMap.put(split[i].substring(1, split[i].length()-1), arg);
+                String[] placeholders = getPlaceholder(split[i]);
                 String[] tabCompletions = method.getAnnotation(TabCompletion.class).args().split(" ");
                 for (String placeholder : placeholders) {
                     for (String tabCompletion : tabCompletions) {
@@ -104,7 +108,6 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
 
                         if (afterArrow.startsWith("~") && afterArrow.endsWith("~")) {
                             String substring = afterArrow.substring(1, afterArrow.length() - 1);
-
                             switch (substring.toLowerCase()) {
 
                                 case "players":
@@ -113,16 +116,20 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                                         continue;
                                     }
                                     break;
+
+                                case "all":
+                                    break;
                                 default:
                                     String[] numbers = substring.split("-");
                                     try {
                                         int parsedInt = Integer.parseInt(arg);
-                                        if (Integer.parseInt(numbers[0]) >= parsedInt || Integer.parseInt(numbers[1]) <= parsedInt) {
+                                        if (Integer.parseInt(numbers[0]) > parsedInt || Integer.parseInt(numbers[1]) < parsedInt) {
                                             matches = false;
                                             continue;
                                         }
                                     } catch (NumberFormatException e) {
-                                        Optional<Method> any = Arrays.stream(command.getClass().getDeclaredMethods()).filter(m -> m.getName().equals(substring)).findAny();
+                                        Method[] declaredMethods = command.getClass().getDeclaredMethods();
+                                        Optional<Method> any = Arrays.stream(declaredMethods).filter(m -> m.getName().equals(substring)).findFirst();
                                         if (any.isEmpty()) {
                                             matches = false;
                                             continue;
@@ -133,10 +140,9 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                                                 matches = false;
                                                 continue;
                                             }
-                                            List<String> list = (List<String>) invoked;
-                                            if (list.stream().noneMatch(s -> s.equalsIgnoreCase(arg))) {
+                                            List<?> list = convertObjectToList(invoked);
+                                            if (list.stream().noneMatch(s -> s.toString().equalsIgnoreCase(arg))) {
                                                 matches = false;
-                                                continue;
                                             }
                                         } catch (IllegalAccessException | InvocationTargetException ex) {
                                             throw new RuntimeException(ex);
@@ -190,6 +196,16 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         return this.getPlaceholder(s).length != 0;
     }
 
+    public static List<?> convertObjectToList(Object obj) {
+        List<?> list = new ArrayList<>();
+        if (obj.getClass().isArray()) {
+            list = Arrays.asList((Object[]) obj);
+        } else if (obj instanceof Collection) {
+            list = new ArrayList<>((Collection<?>) obj);
+        }
+        return list;
+    }
+
 
     private String[] getPlaceholder(String s) {
         String[] emptyArray = new String[0];
@@ -211,8 +227,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
             }
             if (isOpen) builder.append(stringPart);
         }
-
-        return (String[]) list.toArray();
+        return list.toArray(new String[0]);
     }
 
     @Override
