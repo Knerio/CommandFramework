@@ -242,7 +242,6 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
             if (!hasPermissionToExecute(sender, method, annotation.get()))continue;
 
             try {
-                System.out.println(args.length);
                 if (args.length != 1) {
                     if (lastAreCorrect(method, args[args.length - 1].isEmpty() ? Arrays.copyOf(args, args.length - 1) : args))
                         continue;
