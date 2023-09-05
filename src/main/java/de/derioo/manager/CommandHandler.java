@@ -26,7 +26,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
     private final Map<String, String> placeholderMap = new HashMap<>();
 
     public CommandHandler(@NotNull Command command) {
-        CommandInit annotation = command.getClass().getAnnotation(CommandInit.class);
+        CommandProperties annotation = command.getClass().getAnnotation(CommandProperties.class);
         this.name = annotation.name();
         this.basePermission = annotation.permission();
 

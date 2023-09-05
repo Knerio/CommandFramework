@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface CommandInit {
+public @interface CommandProperties {
 
     /**
      * the permission
