@@ -239,7 +239,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
             Optional<Mapping> annotation = this.getAnnotation(method);
             if (annotation.isEmpty()) continue;
 
-            if (!hasPermissionToExecute(sender, method, annotation.get()))continue;
+            if (!hasPermissionToExecute(sender, method, annotation.get())) continue;
 
             try {
                 if (args.length != 1) {
@@ -247,7 +247,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                         continue;
                 }
 
-                String s = annotation.get().args().split(" ")[args.length-1];
+                String s = annotation.get().args().split(" ")[args.length - 1];
 
                 if (!this.hasPlaceholder(s)) {
                     list.add(s);
@@ -255,7 +255,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                 }
 
                 list.addAll(this.getTranslatedPlaceholder(s, method));
-            }catch (IndexOutOfBoundsException e){
+            } catch (IndexOutOfBoundsException e) {
 
             }
 
@@ -281,7 +281,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
     }
 
     private boolean lastAreCorrect(Method method, String[] args) {
-        if (args.length == 0)return true;
+        if (args.length == 0) return true;
 
         Optional<Mapping> annotation = this.getAnnotation(method);
         if (annotation.isEmpty()) throw new RuntimeException();
@@ -306,7 +306,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                     }
                     bool = !isOnRight;
                 }
-            }catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
 
             }
 
