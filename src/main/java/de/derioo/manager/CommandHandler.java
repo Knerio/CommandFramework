@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.awt.image.BandCombineOp;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -241,6 +242,12 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
             if (!hasPermissionToExecute(sender, method, annotation.get()))continue;
 
             try {
+                System.out.println(args.length);
+                if (args.length != 1) {
+                    if (lastAreCorrect(method, args[args.length - 1].isEmpty() ? Arrays.copyOf(args, args.length - 1) : args))
+                        continue;
+                }
+
                 String s = annotation.get().args().split(" ")[args.length-1];
 
                 if (!this.hasPlaceholder(s)) {
@@ -272,6 +279,40 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
             }
         }
         return completeList;
+    }
+
+    private boolean lastAreCorrect(Method method, String[] args) {
+        if (args.length == 0)return true;
+
+        Optional<Mapping> annotation = this.getAnnotation(method);
+        if (annotation.isEmpty()) throw new RuntimeException();
+
+        boolean bool = false;
+
+        for (int i = 0; i < args.length; i++) {
+            try {
+                String s = annotation.get().args().split(" ")[i];
+
+                if (!this.hasPlaceholder(s)) {
+                    if (!args[i].equalsIgnoreCase(s)) {
+                        bool = true;
+                    }
+                    continue;
+                }
+
+                boolean isOnRight = false;
+                for (String translatedPlaceholder : this.getTranslatedPlaceholder(s, method)) {
+                    if (args[i].equalsIgnoreCase(translatedPlaceholder)) {
+                        isOnRight = true;
+                    }
+                    bool = !isOnRight;
+                }
+            }catch (NumberFormatException e) {
+
+            }
+
+        }
+        return bool;
     }
 
     private List<String> getTranslatedPlaceholder(String placeholder, Method method) {
