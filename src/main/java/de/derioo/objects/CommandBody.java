@@ -1,12 +1,11 @@
 package de.derioo.objects;
 
-import lombok.Data;
-import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.Map;
 
-public record CommandBody(String[] args, Player player, CommandExecutor executor, Map<String, String> placeholderMap) {
+public record CommandBody(String[] args, Player player, CommandSender executor, Map<String, String> placeholderMap) {
 
     public String get(String placeholder) {
         return placeholderMap.getOrDefault(placeholder, null);
