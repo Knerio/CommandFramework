@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class CommandHandler implements CommandExecutor, TabCompleter {
 
@@ -97,11 +98,10 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                     matches = false;
                     continue;
                 }
-                placeholderMap.put(split[i].substring(1, split[i].length()-1), arg);
+                placeholderMap.put(split[i].substring(1, split[i].length() - 1), arg);
                 String[] placeholders = getPlaceholder(split[i]);
-                String[] tabCompletions = method.getAnnotation(TabCompletion.class).args().split(" ");
                 for (String placeholder : placeholders) {
-                    for (String tabCompletion : tabCompletions) {
+                    for (String tabCompletion : method.getAnnotation(TabCompletion.class).args().split(" ")) {
                         if (!tabCompletion.startsWith("{" + placeholder + "}")) continue;
 
                         String afterArrow = tabCompletion.split("->")[1];
@@ -234,7 +234,96 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, org.bukkit.command.@NotNull Command command, @NotNull String label, @NotNull String[] args) {
         List<String> list = new ArrayList<>();
 
+        for (Method method : this.command.getClass().getDeclaredMethods()) {
+            Optional<Mapping> annotation = this.getAnnotation(method);
+            if (annotation.isEmpty()) continue;
 
-        return list;
+            if (!hasPermissionToExecute(sender, method, annotation.get()))continue;
+
+            try {
+                String s = annotation.get().args().split(" ")[args.length-1];
+
+                if (!this.hasPlaceholder(s)) {
+                    list.add(s);
+                    continue;
+                }
+
+                list.addAll(this.getTranslatedPlaceholder(s, method));
+            }catch (IndexOutOfBoundsException e){
+
+            }
+
+
+        }
+
+        if (this.command.getClass().isAnnotationPresent(DisableSearchCompletion.class)) {
+            return list;
+        }
+
+        List<String> completeList = new ArrayList<>();
+        String currentarg = args[args.length - 1].toLowerCase();
+        for (String s : list) {
+            try {
+                String s1 = s.toLowerCase();
+                if (s1.startsWith(currentarg)) {
+                    completeList.add(s);
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        return completeList;
     }
+
+    private List<String> getTranslatedPlaceholder(String placeholder, Method method) {
+
+        for (String tabCompletion : method.getAnnotation(TabCompletion.class).args().split(" ")) {
+
+            if (!tabCompletion.startsWith(placeholder)) continue;
+
+            String afterArrow = tabCompletion.split("->")[1];
+
+            if (afterArrow.startsWith("~") && afterArrow.endsWith("~")) {
+                String substring = afterArrow.substring(1, afterArrow.length() - 1);
+                switch (substring.toLowerCase()) {
+
+                    case "players":
+                        return Bukkit.getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList());
+                    default:
+                        String[] numbers = substring.split("-");
+                        try {
+                            int start = Integer.parseInt(numbers[0]);
+                            int end = Integer.parseInt(numbers[1]);
+                            List<String> list = new ArrayList<>();
+                            for (int i = start; i < end; i++) {
+                                list.add(String.valueOf(i));
+                            }
+                            return list;
+                        } catch (NumberFormatException e) {
+                            Method[] declaredMethods = command.getClass().getDeclaredMethods();
+                            Optional<Method> any = Arrays.stream(declaredMethods).filter(m -> m.getName().equals(substring)).findFirst();
+                            if (any.isEmpty()) {
+                                continue;
+                            }
+                            try {
+                                Object invoked = any.get().invoke(this.command);
+                                if (!(invoked instanceof List<?>)) {
+                                    continue;
+                                }
+                                List<?> list = convertObjectToList(invoked);
+                                return list.stream().map(Object::toString).toList();
+                            } catch (IllegalAccessException | InvocationTargetException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                        }
+                }
+
+
+            } else {
+                return Arrays.stream(afterArrow.split(";")).collect(Collectors.toList());
+            }
+        }
+
+        return new ArrayList<>();
+    }
+
 }
