@@ -36,7 +36,7 @@ To use the Framework you have to install it via a Repository and a Dependency
 <dependency>
   <groupId>de.derioo</groupId>
   <artifactId>CommandFramework</artifactId>
-  <version></version>
+  <version>2.0-RELEASE</version>
 </dependency>
 
 ```

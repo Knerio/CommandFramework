@@ -24,7 +24,7 @@ repositories {
 
 dependencies {
     compileOnly "io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT"
-    implementation 'de.derioo:CommandFramework:1.0-RELEASE'
+    implementation 'de.derioo:CommandFramework:1.2-RELEASE'
 }
 
 def targetJavaVersion = 17
