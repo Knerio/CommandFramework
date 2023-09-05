@@ -11,7 +11,6 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.awt.image.BandCombineOp;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -102,7 +101,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                 placeholderMap.put(split[i].substring(1, split[i].length() - 1), arg);
                 String[] placeholders = getPlaceholder(split[i]);
                 for (String placeholder : placeholders) {
-                    for (String tabCompletion : method.getAnnotation(TabCompletion.class).args().split(" ")) {
+                    for (String tabCompletion : method.getAnnotation(Possibilities.class).args().split(" ")) {
                         if (!tabCompletion.startsWith("{" + placeholder + "}")) continue;
 
                         String afterArrow = tabCompletion.split("->")[1];
@@ -316,7 +315,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
 
     private List<String> getTranslatedPlaceholder(String placeholder, Method method) {
 
-        for (String tabCompletion : method.getAnnotation(TabCompletion.class).args().split(" ")) {
+        for (String tabCompletion : method.getAnnotation(Possibilities.class).args().split(" ")) {
 
             if (!tabCompletion.startsWith(placeholder)) continue;
 
