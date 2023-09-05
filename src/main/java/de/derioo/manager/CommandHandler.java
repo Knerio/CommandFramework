@@ -238,6 +238,8 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
             Optional<Mapping> annotation = this.getAnnotation(method);
             if (annotation.isEmpty()) continue;
 
+            if (method.isAnnotationPresent(DisableTabCompletion.class))continue;
+
             if (!hasPermissionToExecute(sender, method, annotation.get())) continue;
 
             try {
