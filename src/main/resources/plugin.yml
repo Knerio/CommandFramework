@@ -1,0 +1,4 @@
+name: CommandFramework
+version: '${version}'
+main: de.derioo.Main
+api-version: '1.20'
