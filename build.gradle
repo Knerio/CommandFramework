@@ -5,20 +5,55 @@ plugins {
 group = 'de.derioo'
 version = '1'
 
+apply plugin: 'java'
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier.set('sources')
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    archiveClassifier.set('javadoc')
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
 repositories {
     mavenCentral()
     maven {
-        name = "papermc-repo"
-        url = "https://repo.papermc.io/repository/maven-public/"
+        name = "spigotmc-repo"
+        url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/"
     }
     maven {
         name = "sonatype"
         url = "https://oss.sonatype.org/content/groups/public/"
     }
+
+    maven {
+        url = uri('https://libraries.minecraft.net/')
+    }
+
+}
+
+java {
+    withSourcesJar()
 }
 
 dependencies {
+    compileOnly 'com.mojang:authlib:1.5.21'
+    implementation 'org.jetbrains:annotations:24.0.0'
+
     compileOnly "io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT"
+
+    compileOnly 'org.projectlombok:lombok:1.18.28'
+    annotationProcessor 'org.projectlombok:lombok:1.18.28'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.28'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.28'
 }
 
 def targetJavaVersion = 17
