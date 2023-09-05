@@ -11,15 +11,26 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
 
+/**
+ * A class to init the Framework and register commands
+ */
 public class CommandFramework {
 
     @Getter
     private static JavaPlugin plugin;
 
+    /**
+     * Used to init the framework
+     * @param plugin the plugin
+     */
     public CommandFramework(JavaPlugin plugin) {
         CommandFramework.plugin = plugin;
     }
 
+    /**
+     * Register the commands via class
+     * @param clazz the class
+     */
     public static void register(@NotNull Class<? extends Command> clazz) {
         try {
             CommandFramework.register(clazz.getDeclaredConstructor().newInstance());
@@ -28,6 +39,10 @@ public class CommandFramework {
         }
     }
 
+    /**
+     * Registers commands via the instance
+     * @param command the instance
+     */
     public static void register(@NotNull Command command) {
         CommandProperties annotation = command.getClass().getAnnotation(CommandProperties.class);
         CommandHandler handler = new CommandHandler(command);

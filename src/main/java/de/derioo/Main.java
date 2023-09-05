@@ -10,6 +10,12 @@ import java.util.logging.Level;
  */
 public final class Main extends JavaPlugin {
 
+    /**
+     * Basic constructor
+     */
+    public Main() {
+    }
+
     @Override
     public void onEnable() {
         getLogger().log(Level.WARNING, "Inventory Framework cannot be enabled");

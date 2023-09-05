@@ -16,6 +16,9 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * A command handler to handle commands
+ */
 public class CommandHandler implements CommandExecutor, TabCompleter {
 
     private final String name;
@@ -25,6 +28,10 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
 
     private final Map<String, String> placeholderMap = new HashMap<>();
 
+    /**
+     * Used to create an instance of the handler
+     * @param command the command
+     */
     public CommandHandler(@NotNull Command command) {
         CommandProperties annotation = command.getClass().getAnnotation(CommandProperties.class);
         this.name = annotation.name();
@@ -196,6 +203,11 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         return this.getPlaceholder(s).length != 0;
     }
 
+    /**
+     * Converts an object to a list
+     * @param obj the object
+     * @return the list
+     */
     public static List<?> convertObjectToList(Object obj) {
         List<?> list = new ArrayList<>();
         if (obj.getClass().isArray()) {
