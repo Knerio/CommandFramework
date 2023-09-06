@@ -1,6 +1,5 @@
 package de.derioo.framework.manager;
 
-import de.derioo.annotations.*;
 import de.derioo.framework.annotations.*;
 import de.derioo.framework.interfaces.Command;
 import de.derioo.framework.objects.CommandBody;
