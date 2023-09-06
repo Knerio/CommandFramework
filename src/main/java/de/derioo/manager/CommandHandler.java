@@ -89,7 +89,8 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
             if (annotation.isEmpty()) continue;
 
 
-            String[] split = annotation.get().args().split(" ");
+            String annotationArgs = annotation.get().args();
+            String[] split = annotationArgs.isEmpty() ? new String[0] : annotationArgs.split(" ");
 
             if (split.length != args.length) continue;
 
