@@ -1,4 +1,4 @@
-package de.derioo.interfaces;
+package de.derioo.framework.interfaces;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandExecutor;

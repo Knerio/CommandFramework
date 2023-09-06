@@ -1,8 +1,9 @@
-package de.derioo.manager;
+package de.derioo.framework.manager;
 
 import de.derioo.annotations.*;
-import de.derioo.interfaces.Command;
-import de.derioo.objects.CommandBody;
+import de.derioo.framework.annotations.*;
+import de.derioo.framework.interfaces.Command;
+import de.derioo.framework.objects.CommandBody;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

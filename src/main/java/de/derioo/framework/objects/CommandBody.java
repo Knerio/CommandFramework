@@ -1,4 +1,4 @@
-package de.derioo.objects;
+package de.derioo.framework.objects;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;

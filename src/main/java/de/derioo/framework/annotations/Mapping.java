@@ -1,4 +1,4 @@
-package de.derioo.annotations;
+package de.derioo.framework.annotations;
 
 
 

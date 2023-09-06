@@ -1,7 +1,7 @@
-package de.derioo.manager;
+package de.derioo.framework.manager;
 
-import de.derioo.annotations.CommandProperties;
-import de.derioo.interfaces.Command;
+import de.derioo.framework.annotations.CommandProperties;
+import de.derioo.framework.interfaces.Command;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
