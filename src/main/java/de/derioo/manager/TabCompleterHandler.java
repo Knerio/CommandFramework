@@ -70,6 +70,7 @@ public class TabCompleterHandler implements TabCompleter {
 
             list.addAll(this.getTranslatedPlaceholder(s, method));
 
+            System.out.println(list);
         }
 
 
