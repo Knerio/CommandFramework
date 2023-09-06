@@ -6,7 +6,6 @@ import de.derioo.objects.CommandBody;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -14,8 +13,6 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * A command handler to handle commands
@@ -187,7 +184,12 @@ public class CommandHandler implements CommandExecutor {
         return false;
     }
 
-
+    /**
+     * Checks if sender has permission to execute
+     * @param sender the sender
+     * @param annotation the annotation
+     * @return the bool
+     */
     public boolean hasPermissionToExecute(CommandSender sender, Mapping annotation) {
         if (annotation.extraPermission())
             return sender.hasPermission(annotation.permission());
@@ -195,6 +197,11 @@ public class CommandHandler implements CommandExecutor {
         return sender.hasPermission(this.basePermission);
     }
 
+    /**
+     * Gets an optional annotation
+     * @param method the method to get the annotation from
+     * @return the optional
+     */
     public Optional<Mapping> getAnnotation(Method method) {
         if (method.isAnnotationPresent(Mapping.class)) return Optional.of(method.getAnnotation(Mapping.class));
         return Optional.empty();
@@ -207,6 +214,11 @@ public class CommandHandler implements CommandExecutor {
         return o.equals(other);
     }
 
+    /**
+     * Checks if a stri#ng has a placeholder
+     * @param s the string
+     * @return the bool
+     */
     public boolean hasPlaceholder(String s) {
         return this.getPlaceholder(s).length != 0;
     }

@@ -20,12 +20,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * A Tab Completer handler to handle commands
+ */
 public class TabCompleterHandler implements TabCompleter {
 
     private final Command command;
 
     private final CommandHandler handler;
 
+
+    /**
+     * Used to create an instance of the handler
+     * @param command the command
+     * @param commandHandler the handler of the command, used to access util methods
+     */
     public TabCompleterHandler(Command command, CommandHandler commandHandler) {
         this.command = command;
         this.handler = commandHandler;
