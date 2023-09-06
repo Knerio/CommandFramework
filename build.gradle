@@ -41,7 +41,7 @@ dependencies {
 
     testCompileOnly 'org.projectlombok:lombok:1.18.28'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.28'
-    implementation 'de.derioo:CommandFramework:2.1-RELEASE'
+    implementation 'de.derioo:CommandFramework:2.1.1-RELEASE'
 }
 
 
