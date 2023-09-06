@@ -15,5 +15,5 @@ public class TestCommand extends Command {
     public void root(CommandBody body) {
         body.executor().sendMessage(Component.text("You executed noting hehe"));
     }
-
+    
 }
