@@ -220,6 +220,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
 
     /**
      * Converts an object to a list
+     *
      * @param obj the object
      * @return the list
      */
@@ -319,22 +320,24 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         for (int i = 0; i < args.length; i++) {
             String[] split = annotation.get().args().split(" ");
             if (split.length < i) continue;
+            System.out.println(split.length);
+            System.out.println(i);
             String s = split[i];
 
-                if (!this.hasPlaceholder(s)) {
-                    if (!args[i].equalsIgnoreCase(s)) {
-                        isCorrect = true;
-                    }
-                    continue;
+            if (!this.hasPlaceholder(s)) {
+                if (!args[i].equalsIgnoreCase(s)) {
+                    isCorrect = true;
                 }
+                continue;
+            }
 
-                boolean isOnRight = false;
-                for (String translatedPlaceholder : this.getTranslatedPlaceholder(s, method)) {
-                    if (args[i].equalsIgnoreCase(translatedPlaceholder)) {
-                        isOnRight = true;
-                    }
-                    isCorrect = !isOnRight;
+            boolean isOnRight = false;
+            for (String translatedPlaceholder : this.getTranslatedPlaceholder(s, method)) {
+                if (args[i].equalsIgnoreCase(translatedPlaceholder)) {
+                    isOnRight = true;
                 }
+                isCorrect = !isOnRight;
+            }
 
         }
         return isCorrect;
