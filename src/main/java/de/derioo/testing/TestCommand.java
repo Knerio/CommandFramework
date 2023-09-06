@@ -1,10 +1,10 @@
 package de.derioo.testing;
 
-import de.derioo.framework.annotations.CommandProperties;
-import de.derioo.framework.annotations.Mapping;
-import de.derioo.framework.annotations.NeedsNoPlayer;
-import de.derioo.framework.interfaces.Command;
-import de.derioo.framework.objects.CommandBody;
+import de.derioo.annotations.CommandProperties;
+import de.derioo.annotations.Mapping;
+import de.derioo.annotations.NeedsNoPlayer;
+import de.derioo.interfaces.Command;
+import de.derioo.objects.CommandBody;
 import net.kyori.adventure.text.Component;
 
 @CommandProperties(name = "test")
