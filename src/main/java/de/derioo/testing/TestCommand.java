@@ -10,10 +10,16 @@ import net.kyori.adventure.text.Component;
 @CommandProperties(name = "test")
 public class TestCommand extends Command {
 
-    @Mapping(args = "")
+    @Mapping(args = " ")
     @NeedsNoPlayer
     public void root(CommandBody body) {
         body.executor().sendMessage(Component.text("You executed noting hehe"));
     }
-    
+
+
+    @Mapping(args = "1")
+    @NeedsNoPlayer
+    public void one(CommandBody body) {
+        body.executor().sendMessage(Component.text("You executed noting hehe"));
+    }
 }
