@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 /**
  * A command handler to handle commands
  */
-public class CommandHandler implements CommandExecutor, TabCompleter {
+public class CommandHandler implements CommandExecutor {
 
     private final String name;
     private final String basePermission;
@@ -131,52 +131,45 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
 
                     String afterArrow = tabCompletion.split("->")[1];
 
-                    if (afterArrow.startsWith("~") && afterArrow.endsWith("~")) {
-                        String substring = afterArrow.substring(1, afterArrow.length() - 1);
-                        switch (substring.toLowerCase()) {
+                    if (!afterArrow.startsWith("~") || !afterArrow.endsWith("~")) return true;
+                    String substring = afterArrow.substring(1, afterArrow.length() - 1);
+                    switch (substring.toLowerCase()) {
 
-                            case "players":
-                                if (Bukkit.getOnlinePlayers().stream().map(Player::getName).noneMatch(s -> s.equalsIgnoreCase(arg))) {
+                        case "players":
+                            if (Bukkit.getOnlinePlayers().stream().map(Player::getName).noneMatch(s -> s.equalsIgnoreCase(arg))) {
+                                return false;
+                            }
+                            break;
+
+                        case "all":
+                            break;
+                        default:
+                            String[] numbers = substring.split("-");
+
+                            if (isInt(numbers[0]) && isInt(numbers[1]) && isInt(arg)) {
+                                int parsedInt = Integer.parseInt(arg);
+                                if (Integer.parseInt(numbers[0]) > parsedInt || Integer.parseInt(numbers[1]) < parsedInt) {
                                     return false;
                                 }
-                                break;
+                            }
 
-                            case "all":
-                                break;
-                            default:
-                                String[] numbers = substring.split("-");
+                            Method[] declaredMethods = command.getClass().getDeclaredMethods();
+                            Optional<Method> any = Arrays.stream(declaredMethods).filter(m -> m.getName().equals(substring)).findFirst();
+                            if (any.isEmpty()) return false;
 
-                                if (isInt(numbers[0]) && isInt(numbers[1]) && isInt(arg)) {
-                                    int parsedInt = Integer.parseInt(arg);
-                                    if (Integer.parseInt(numbers[0]) > parsedInt || Integer.parseInt(numbers[1]) < parsedInt) {
-                                        return false;
-                                    }
-                                }
+                            try {
+                                Object invoked = any.get().invoke(this.command);
+                                if (!(invoked instanceof List<?>)) return false;
 
-                                Method[] declaredMethods = command.getClass().getDeclaredMethods();
-                                Optional<Method> any = Arrays.stream(declaredMethods).filter(m -> m.getName().equals(substring)).findFirst();
-                                if (any.isEmpty()) {
-                                    return false;
-                                }
-                                try {
-                                    Object invoked = any.get().invoke(this.command);
-                                    if (!(invoked instanceof List<?>)) {
-                                        return false;
-                                    }
-                                    List<?> list = convertObjectToList(invoked);
-                                    if (list.stream().noneMatch(s -> s.toString().equalsIgnoreCase(arg))) {
-                                        return false;
-                                    }
-                                } catch (IllegalAccessException | InvocationTargetException ex) {
-                                    throw new RuntimeException(ex);
-                                }
+                                List<?> list = convertObjectToList(invoked);
+                                if (list.stream().noneMatch(s -> s.toString().equalsIgnoreCase(arg))) return false;
 
-                                break;
-                        }
+                            } catch (IllegalAccessException | InvocationTargetException ex) {
+                                throw new RuntimeException(ex);
+                            }
 
 
-                    } else if (Arrays.stream(afterArrow.split(";")).noneMatch(s -> s.equalsIgnoreCase(arg))) {
-                        return true;
+                            break;
                     }
                 }
             }
@@ -195,14 +188,14 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
     }
 
 
-    private boolean hasPermissionToExecute(CommandSender sender, Mapping annotation) {
+    public boolean hasPermissionToExecute(CommandSender sender, Mapping annotation) {
         if (annotation.extraPermission())
             return sender.hasPermission(annotation.permission());
 
         return sender.hasPermission(this.basePermission);
     }
 
-    private Optional<Mapping> getAnnotation(Method method) {
+    public Optional<Mapping> getAnnotation(Method method) {
         if (method.isAnnotationPresent(Mapping.class)) return Optional.of(method.getAnnotation(Mapping.class));
         return Optional.empty();
     }
@@ -214,7 +207,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         return o.equals(other);
     }
 
-    private boolean hasPlaceholder(String s) {
+    public boolean hasPlaceholder(String s) {
         return this.getPlaceholder(s).length != 0;
     }
 
@@ -224,7 +217,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
      * @param obj the object
      * @return the list
      */
-    public static List<?> convertObjectToList(Object obj) {
+    public List<?> convertObjectToList(Object obj) {
         List<?> list = new ArrayList<>();
         if (obj.getClass().isArray()) {
             list = Arrays.asList((Object[]) obj);
@@ -258,145 +251,5 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         return list.toArray(new String[0]);
     }
 
-    @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, org.bukkit.command.@NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        List<String> list = new ArrayList<>();
-
-        for (Method method : this.command.getClass().getDeclaredMethods()) {
-            Optional<Mapping> annotation = this.getAnnotation(method);
-            if (annotation.isEmpty()) continue;
-
-            if (method.isAnnotationPresent(DisableTabCompletion.class)) continue;
-
-            if (!hasPermissionToExecute(sender, annotation.get())) continue;
-
-            if (args.length != 1) {
-                if (lastAreCorrect(method, args[args.length - 1].isEmpty() ? Arrays.copyOf(args, args.length - 1) : args))
-                    continue;
-            }
-
-            String s = annotation.get().args().split(" ")[args.length - 1];
-
-            if (!this.hasPlaceholder(s)) {
-                list.add(s);
-                continue;
-            }
-
-            list.addAll(this.getTranslatedPlaceholder(s, method));
-
-        }
-
-
-        if (this.command.getClass().isAnnotationPresent(DisableSearchCompletion.class)) {
-            return list;
-        }
-
-        return this.getSearchCompletion(list, args);
-    }
-
-    private @NotNull List<String> getSearchCompletion(@NotNull List<String> list, String @NotNull [] args) {
-        List<String> completeList = new ArrayList<>();
-        String currentArg = args[args.length - 1].toLowerCase();
-        for (String s : list) {
-            try {
-                String s1 = s.toLowerCase();
-                if (s1.startsWith(currentArg)) {
-                    completeList.add(s);
-                }
-            } catch (Exception ignored) {
-            }
-        }
-        return completeList;
-    }
-
-    private boolean lastAreCorrect(Method method, String @NotNull [] args) {
-        if (args.length == 0) return true;
-
-        Optional<Mapping> annotation = this.getAnnotation(method);
-        if (annotation.isEmpty()) throw new RuntimeException();
-
-        boolean isCorrect = false;
-
-        for (int i = 0; i < args.length; i++) {
-            String[] split = annotation.get().args().split(" ");
-            if (split.length < i) continue;
-            System.out.println(split.length);
-            System.out.println(i);
-            String s = split[i];
-
-            if (!this.hasPlaceholder(s)) {
-                if (!args[i].equalsIgnoreCase(s)) {
-                    isCorrect = true;
-                }
-                continue;
-            }
-
-            boolean isOnRight = false;
-            for (String translatedPlaceholder : this.getTranslatedPlaceholder(s, method)) {
-                if (args[i].equalsIgnoreCase(translatedPlaceholder)) {
-                    isOnRight = true;
-                }
-                isCorrect = !isOnRight;
-            }
-
-        }
-        return isCorrect;
-    }
-
-    private List<String> getTranslatedPlaceholder(String placeholder, Method method) {
-
-        for (String tabCompletion : method.getAnnotation(Possibilities.class).args().split(" ")) {
-
-            if (!tabCompletion.startsWith(placeholder)) continue;
-
-            String afterArrow = tabCompletion.split("->")[1];
-
-            if (afterArrow.startsWith("~") && afterArrow.endsWith("~")) {
-                String substring = afterArrow.substring(1, afterArrow.length() - 1);
-                if (substring.equalsIgnoreCase("players")) {
-                    return Bukkit.getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList());
-                }
-
-                try {
-                    String[] numbers = substring.split("-");
-                    int start = Integer.parseInt(numbers[0]);
-                    int end = Integer.parseInt(numbers[1]);
-                    List<String> list = new ArrayList<>();
-                    for (int i = start; i < end; i++) {
-                        list.add(String.valueOf(i));
-                    }
-                    return list;
-                } catch (NumberFormatException e) {
-                    Method[] declaredMethods = command.getClass().getDeclaredMethods();
-                    Optional<Method> any = Arrays.stream(declaredMethods).filter(m -> m.getName().equals(substring)).findFirst();
-                    if (any.isEmpty()) {
-                        continue;
-                    }
-                    try {
-                        Object invoked = any.get().invoke(this.command);
-                        if (!(invoked instanceof List<?>)) {
-                            continue;
-                        }
-                        List<?> list = convertObjectToList(invoked);
-                        return list.stream().map(Object::toString).toList();
-                    } catch (IllegalAccessException | InvocationTargetException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                }
-
-
-            } else {
-                return Arrays.stream(afterArrow.split(";")).collect(Collectors.toList());
-            }
-        }
-
-        return new ArrayList<>();
-    }
-
-    private void forEach(List<Method> list, Consumer<Method> consumer) {
-        for (Method method : list) {
-            consumer.accept(method);
-        }
-    }
 
 }

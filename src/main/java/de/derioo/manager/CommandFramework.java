@@ -45,14 +45,14 @@ public class CommandFramework {
      */
     public static void register(@NotNull Command command) {
         CommandProperties annotation = command.getClass().getAnnotation(CommandProperties.class);
-        CommandHandler handler = new CommandHandler(command);
         PluginCommand pluginCommand = CommandFramework.plugin.getCommand(annotation.name());
         if (pluginCommand == null) {
             Bukkit.getConsoleSender().sendMessage(Component.text("The command '" + annotation.name() + "' isn't in the plugin.yml, please add it to use it"));
             return;
         }
-        pluginCommand.setExecutor(handler);
-        pluginCommand.setTabCompleter(handler);
+        CommandHandler commandHandler = new CommandHandler(command);
+        pluginCommand.setExecutor(commandHandler);
+        pluginCommand.setTabCompleter(new TabCompleterHandler(command, commandHandler));
 
     }
 
