@@ -175,7 +175,12 @@ public class CommandHandler implements CommandExecutor {
     }
 
 
-    private boolean isInt(String s) {
+    /**
+     * Checks if string is int
+     * @param s the string
+     * @return the bool
+     */
+    public boolean isInt(String s) {
         try {
             Integer.parseInt(s);
             return true;

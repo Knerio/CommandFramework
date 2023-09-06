@@ -32,7 +32,8 @@ public class TabCompleterHandler implements TabCompleter {
 
     /**
      * Used to create an instance of the handler
-     * @param command the command
+     *
+     * @param command        the command
      * @param commandHandler the handler of the command, used to access util methods
      */
     public TabCompleterHandler(Command command, CommandHandler commandHandler) {
@@ -58,7 +59,9 @@ public class TabCompleterHandler implements TabCompleter {
                     continue;
             }
 
-            String s = annotation.get().args().split(" ")[args.length - 1];
+            String[] split = annotation.get().args().split(" ");
+            if (split.length <= args.length - 1) continue;
+            String s = split[args.length - 1];
 
             if (!this.handler.hasPlaceholder(s)) {
                 list.add(s);
@@ -133,43 +136,43 @@ public class TabCompleterHandler implements TabCompleter {
 
             String afterArrow = tabCompletion.split("->")[1];
 
-            if (afterArrow.startsWith("~") && afterArrow.endsWith("~")) {
-                String substring = afterArrow.substring(1, afterArrow.length() - 1);
-                if (substring.equalsIgnoreCase("players")) {
-                    return Bukkit.getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList());
-                }
-
-                try {
-                    String[] numbers = substring.split("-");
-                    int start = Integer.parseInt(numbers[0]);
-                    int end = Integer.parseInt(numbers[1]);
-                    List<String> list = new ArrayList<>();
-                    for (int i = start; i < end; i++) {
-                        list.add(String.valueOf(i));
-                    }
-                    return list;
-                } catch (NumberFormatException e) {
-                    Method[] declaredMethods = command.getClass().getDeclaredMethods();
-                    Optional<Method> any = Arrays.stream(declaredMethods).filter(m -> m.getName().equals(substring)).findFirst();
-                    if (any.isEmpty()) {
-                        continue;
-                    }
-                    try {
-                        Object invoked = any.get().invoke(this.command);
-                        if (!(invoked instanceof List<?>)) {
-                            continue;
-                        }
-                        List<?> list = this.handler.convertObjectToList(invoked);
-                        return list.stream().map(Object::toString).toList();
-                    } catch (IllegalAccessException | InvocationTargetException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                }
-
-
-            } else {
+            if (!afterArrow.startsWith("~") || !afterArrow.endsWith("~")) {
                 return Arrays.stream(afterArrow.split(";")).collect(Collectors.toList());
             }
+
+
+            String substring = afterArrow.substring(1, afterArrow.length() - 1);
+            if (substring.equalsIgnoreCase("players"))
+                return Bukkit.getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList());
+            String[] numbers = substring.split("-");
+
+            if (this.handler.isInt(numbers[0]) && this.handler.isInt(numbers[1])) {
+                int start = Integer.parseInt(numbers[0]);
+                int end = Integer.parseInt(numbers[1]);
+                List<String> list = new ArrayList<>();
+                for (int i = start; i < end; i++) {
+                    list.add(String.valueOf(i));
+                }
+                return list;
+            }
+
+            Method[] declaredMethods = command.getClass().getDeclaredMethods();
+            Optional<Method> any = Arrays.stream(declaredMethods).filter(m -> m.getName().equals(substring)).findFirst();
+            if (any.isEmpty()) {
+                continue;
+            }
+            try {
+                Object invoked = any.get().invoke(this.command);
+                if (!(invoked instanceof List<?>)) {
+                    continue;
+                }
+                List<?> list = this.handler.convertObjectToList(invoked);
+                return list.stream().map(Object::toString).toList();
+            } catch (IllegalAccessException | InvocationTargetException ex) {
+                throw new RuntimeException(ex);
+            }
+
+
         }
 
         return new ArrayList<>();
