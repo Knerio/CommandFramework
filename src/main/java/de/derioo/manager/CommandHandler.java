@@ -314,15 +314,16 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         Optional<Mapping> annotation = this.getAnnotation(method);
         if (annotation.isEmpty()) throw new RuntimeException();
 
-        boolean bool = false;
+        boolean isCorrect = false;
 
         for (int i = 0; i < args.length; i++) {
-            try {
-                String s = annotation.get().args().split(" ")[i];
+            String[] split = annotation.get().args().split(" ");
+            if (split.length < i) continue;
+            String s = split[i];
 
                 if (!this.hasPlaceholder(s)) {
                     if (!args[i].equalsIgnoreCase(s)) {
-                        bool = true;
+                        isCorrect = true;
                     }
                     continue;
                 }
@@ -332,14 +333,11 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                     if (args[i].equalsIgnoreCase(translatedPlaceholder)) {
                         isOnRight = true;
                     }
-                    bool = !isOnRight;
+                    isCorrect = !isOnRight;
                 }
-            } catch (NumberFormatException e) {
-
-            }
 
         }
-        return bool;
+        return isCorrect;
     }
 
     private List<String> getTranslatedPlaceholder(String placeholder, Method method) {
