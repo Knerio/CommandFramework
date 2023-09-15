@@ -27,7 +27,7 @@ public @interface Mapping {
 
     /**
      * Used to create an extra permission
-     * @return if it should uses an extra permission
+     * @return if it should use an extra permission
      */
     boolean extraPermission() default false;
 
