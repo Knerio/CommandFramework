@@ -70,7 +70,6 @@ public class TabCompleterHandler implements TabCompleter {
 
             list.addAll(this.getTranslatedPlaceholder(s, method));
 
-            System.out.println(list);
         }
 
 
@@ -83,7 +82,6 @@ public class TabCompleterHandler implements TabCompleter {
 
     private boolean lastAreCorrect(Method method, String @NotNull [] args) {
         if (args.length == 0) {
-            System.out.println("1");
             return true;
         }
 
@@ -95,7 +93,6 @@ public class TabCompleterHandler implements TabCompleter {
         for (int i = 0; i < args.length; i++) {
             String[] split = annotation.get().args().split(" ");
             if (split.length <= i) {
-                System.out.println("2");
                 continue;
             }
 
@@ -105,7 +102,6 @@ public class TabCompleterHandler implements TabCompleter {
                 if (!args[i].equalsIgnoreCase(s)) {
                     isCorrect = true;
                 }
-                System.out.println("3");
                 continue;
             }
 
@@ -115,7 +111,6 @@ public class TabCompleterHandler implements TabCompleter {
                     isOnRight = true;
                 }
                 isCorrect = !isOnRight;
-                System.out.println("4" + isCorrect);
             }
 
         }
