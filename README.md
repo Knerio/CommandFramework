@@ -87,9 +87,6 @@ To register it use the following:
 ```java
 @Override
 public void onEnable() {
-    getLogger().log(Level.WARNING, "Inventory Framework cannot be enabled");
-    Bukkit.getPluginManager().disablePlugin(this);
-
     new CommandFramework(this);
     CommandFramework.register(new TestCommand());
 }
