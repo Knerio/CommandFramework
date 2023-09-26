@@ -1,5 +1,6 @@
 package de.derioo.interfaces;
 
+import de.derioo.objects.CommandBody;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -36,5 +37,13 @@ public abstract class Command {
         sender.sendMessage(Component.text("This command is not declared"));
     }
 
+    /**
+     * Is called on every command, wich would normally be executed
+     * @param body the command properties
+     * @return true if it should be executed, false if not
+     */
+    public boolean onAll(CommandBody body) {
+        return true;
+    }
 
 }

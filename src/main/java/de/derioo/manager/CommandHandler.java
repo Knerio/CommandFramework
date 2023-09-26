@@ -53,30 +53,35 @@ public class CommandHandler implements CommandExecutor {
             this.command.onNoMappingFound(sender, args);
             return false;
         }
+        CommandBody commandBody = new CommandBody(args, sender instanceof Player ? (Player) sender : null, sender, placeholderMap);
+
+        if (!this.command.onAll(commandBody)) {
+            return false;
+        }
 
         if (matchingMethod.isAnnotationPresent(Async.class)) {
             Bukkit.getScheduler().runTaskAsynchronously(CommandFramework.getPlugin(), () -> {
-                invoke(matchingMethod, args, sender);
+                invoke(matchingMethod, commandBody);
             });
-            return false;
+            return true;
         }
         if (matchingMethod.isAnnotationPresent(Sync.class)) {
             Bukkit.getScheduler().runTask(CommandFramework.getPlugin(), () -> {
-                invoke(matchingMethod, args, sender);
+                invoke(matchingMethod, commandBody);
             });
-            return false;
+            return true;
         }
 
-        invoke(matchingMethod, args, sender);
+        invoke(matchingMethod, commandBody);
 
 
-        return false;
+        return true;
     }
 
-    private void invoke(Method method, String[] args, CommandSender sender) {
+    private void invoke(Method method, CommandBody body) {
         try {
-            CommandBody commandBody = new CommandBody(args, sender instanceof Player ? (Player) sender : null, sender, placeholderMap);
-            method.invoke(this.command, commandBody);
+
+            method.invoke(this.command, body);
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
