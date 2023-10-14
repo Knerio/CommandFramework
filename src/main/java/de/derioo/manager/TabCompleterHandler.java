@@ -55,8 +55,9 @@ public class TabCompleterHandler implements TabCompleter {
             if (!this.handler.hasPermissionToExecute(sender, annotation.get())) continue;
 
             if (args.length != 1) {
-                if (lastAreCorrect(method, args[args.length - 1].isEmpty() ? Arrays.copyOf(args, args.length - 1) : args))
+                if (lastAreCorrect(method, args[args.length - 1].isEmpty() ? Arrays.copyOf(args, args.length - 1) : args)) {
                     continue;
+                }
             }
 
             String[] split = annotation.get().args().split(" ");
@@ -88,15 +89,29 @@ public class TabCompleterHandler implements TabCompleter {
         Optional<Mapping> annotation = this.handler.getAnnotation(method);
         if (annotation.isEmpty()) throw new RuntimeException();
 
+        String[] rightArgs = annotation.get().args().split(" ");
+        for (int i = 0; i < rightArgs.length; i++) {
+            String right = rightArgs[i];
+            if (args.length - 1 <= i) {
+                break;
+            }
+            String given = args[i];
+
+            if (!right.equalsIgnoreCase(given) && !right.startsWith(given)) {
+                return true;
+            }
+
+
+        }
+
         boolean isCorrect = false;
 
         for (int i = 0; i < args.length; i++) {
-            String[] split = annotation.get().args().split(" ");
-            if (split.length <= i) {
+            if (rightArgs.length <= i) {
                 continue;
             }
 
-            String s = split[i];
+            String s = rightArgs[i];
 
             if (!this.handler.hasPlaceholder(s)) {
                 if (!args[i].equalsIgnoreCase(s)) {
