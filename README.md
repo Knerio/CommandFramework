@@ -36,7 +36,7 @@ To use the Framework you have to install it via a Repository and a Dependency
 <dependency>
   <groupId>de.derioo</groupId>
   <artifactId>CommandFramework</artifactId>
-  <version>3.1.1-RELEASE</version>
+  <version>3.1.4-RELEASE</version>
 </dependency>
 
 ```
@@ -47,6 +47,10 @@ To create Commands and more you first have to initialize the Framework in the on
 
 ```java
 new CommandFramework(plugin);
+```
+To register a command use this:
+```java
+CommandFramework.register(new TestCommand());
 ```
 
 ## Simple Command
