@@ -26,7 +26,7 @@ To use the Framework you have to install it via a Repository and a Dependency
   ```
   <repository>
     <id>commandFramework</id>
-    <url>https://nexus.derioo.de/nexus/content/repositories/CommandFramework</url>
+    <url>https://nexus.derioo.de/releases</url>
   </repository>
 ```
 #
@@ -36,7 +36,7 @@ To use the Framework you have to install it via a Repository and a Dependency
 <dependency>
   <groupId>de.derioo</groupId>
   <artifactId>CommandFramework</artifactId>
-  <version>3.1.4-RELEASE</version>
+  <version>4.1.0</version>
 </dependency>
 
 ```
