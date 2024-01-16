@@ -145,6 +145,9 @@ public class CommandHandler implements CommandExecutor {
 
                         case "all":
                             break;
+                        case "int":
+                            if (!this.isInt(arg)) return false;
+                            break;
                         default:
                             String[] numbers = substring.split("-");
 

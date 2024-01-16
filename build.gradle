@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'de.derioo'
-version = '1'
+version = '5.0.0'
 
 apply plugin: 'java'
 
