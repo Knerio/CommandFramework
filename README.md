@@ -22,7 +22,7 @@
 
 To use the Framework you have to install it via a Repository and a Dependency
 
-# Repository
+# Repository - Not maintained anymore
   ```
 <repository>
   <id>derio</id>
@@ -31,7 +31,7 @@ To use the Framework you have to install it via a Repository and a Dependency
 </repository>
 ```
 #
-# Dependency
+# Dependency - Not maintained anymore
 
 ```
 <dependency>
